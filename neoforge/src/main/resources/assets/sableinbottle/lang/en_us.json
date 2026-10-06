@@ -1,6 +1,7 @@
 {
   "itemGroup.sableinbottle.main": "Sable in Bottle",
   "item.sableinbottle.ship_in_a_bottle": "Ship in a Bottle",
+  "block.sableinbottle.bottle": "Bottled Ship",
   "text.sableinbottle.not_on_ship": "You must be standing on a ship!",
   "text.sableinbottle.ship_bottled": "Ship bottled successfully!",
   "text.sableinbottle.ship_released": "Ship released!",

@@ -25,8 +25,10 @@ public class ModCreativeModeTabs {
                         stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
                         return stack;
                     })
-                    .displayItems((params, output) ->
-                            output.accept(ModItems.SHIP_IN_A_BOTTLE.get()))
+                    .displayItems((params, output) -> {
+                        output.accept(ModItems.SHIP_IN_A_BOTTLE.get());
+                        output.accept(ModItems.BOTTLE.get());
+                    })
                     .build()
     );
 }

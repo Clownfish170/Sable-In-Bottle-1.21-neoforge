@@ -1,5 +1,7 @@
 package ace.actually.sableinbottle.item;
 
+import ace.actually.sableinbottle.ModBlocks;
+import ace.actually.sableinbottle.blocks.entity.ShipInBottleBlockEntity;
 import dev.ryanhcode.sable.Sable;
 import dev.ryanhcode.sable.api.sublevel.SubLevelContainer;
 import dev.ryanhcode.sable.sublevel.ServerSubLevel;
@@ -24,6 +26,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 
@@ -44,11 +47,41 @@ public class ShipInABottleItem extends Item {
 
         ItemStack stack = context.getItemInHand();
         CustomData data = stack.get(DataComponents.CUSTOM_DATA);
+        boolean hasShip = data != null && data.copyTag().contains("ship");
 
-        if (data != null && data.copyTag().contains("ship")) {
+        boolean pointingAtShip = getSubLevel(level, context.getClickedPos()) != null;
+        if (pointingAtShip && !hasShip) {
+            return captureShip(stack, level, player, context.getClickedPos());
+        }
+        if (hasShip && !player.isShiftKeyDown()) {
             return releaseShip(stack, level, player, context.getClickedPos());
         }
-        return captureShip(stack, level, player, context.getClickedPos());
+        // Ordinary ground with an empty bottle, or sneak + a filled bottle:
+        // put the big bottle down as a block.
+        return placeBottle(context, stack, hasShip ? data.copyTag().getCompound("ship") : null);
+    }
+
+    /**
+     * Places the big bottle block against the clicked face. Any saved ship moves
+     * into the block entity, and the item is consumed (except in creative).
+     */
+    private InteractionResult placeBottle(UseOnContext context, ItemStack stack, CompoundTag shipTag) {
+        Level level = context.getLevel();
+        BlockPos placePos = context.getClickedPos().relative(context.getClickedFace());
+        if (!level.getBlockState(placePos).canBeReplaced(new BlockPlaceContext(context))) {
+            return InteractionResult.PASS;
+        }
+        if (!level.setBlock(placePos, ModBlocks.BOTTLE.get().defaultBlockState(), 3)) {
+            return InteractionResult.PASS;
+        }
+
+        if (shipTag != null && level.getBlockEntity(placePos) instanceof ShipInBottleBlockEntity bottle) {
+            bottle.setShipTag(shipTag);
+        }
+        if (!context.getPlayer().hasInfiniteMaterials()) {
+            stack.shrink(1);
+        }
+        return InteractionResult.SUCCESS;
     }
 
     private InteractionResult captureShip(ItemStack stack, Level level, Player player, BlockPos clickedPos) {

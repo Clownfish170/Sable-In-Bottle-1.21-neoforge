@@ -1,6 +1,7 @@
 {
   "itemGroup.sableinbottle.main": "Sable in Bottle",
   "item.sableinbottle.ship_in_a_bottle": "瓶中船",
+  "block.sableinbottle.bottle": "瓶中船摆件",
   "text.sableinbottle.not_on_ship": "你必须站在船上！",
   "text.sableinbottle.ship_bottled": "船只已收进瓶中！",
   "text.sableinbottle.ship_released": "船只已释放！",
