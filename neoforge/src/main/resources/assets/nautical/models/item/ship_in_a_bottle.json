@@ -1,0 +1,14 @@
+{
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "nautical:item/ship_in_a_bottle"
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "nautical:has_ship": 1
+      },
+      "model": "nautical:item/ship_in_a_bottle_full"
+    }
+  ]
+}
