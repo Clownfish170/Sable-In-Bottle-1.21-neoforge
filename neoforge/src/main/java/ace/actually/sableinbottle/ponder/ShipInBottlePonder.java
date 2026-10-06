@@ -9,7 +9,6 @@ import net.createmod.ponder.api.scene.SceneBuilder;
 import net.createmod.ponder.api.scene.SceneBuildingUtil;
 import net.createmod.ponder.api.scene.Selection;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -47,35 +46,26 @@ public class ShipInBottlePonder {
     private static final int BOUNDS_Y = 20;
     private static final int BOUNDS_Z = 24;
 
-    private static final String MSG_SAVED = "sableinbottle.ponder.bottle.msg.saved";
-    private static final String MSG_EMPTY = "sableinbottle.ponder.bottle.msg.empty";
-    private static final String MSG_OVERSIZE = "sableinbottle.ponder.bottle.msg.oversize";
-
     public static void bottledShip(SceneBuilder scene, SceneBuildingUtil util) {
         scene.title("bottle", "Ship in a Bottle");
 
         Map<BlockPos, BlockState> structure;
-        String noteKey;
 
         Map<BlockPos, BlockState> saved = decodeSavedStructure();
         if (saved == null) {
             structure = demoShip();
-            noteKey = MSG_EMPTY;
         } else {
             Map<BlockPos, BlockState> normalized = normalize(saved);
             BlockPos size = maxSize(normalized.keySet());
             if (size.getX() < BOUNDS_X - 1 && size.getY() < BOUNDS_Y - 1 && size.getZ() < BOUNDS_Z - 1) {
                 structure = normalized;
-                noteKey = MSG_SAVED;
             } else {
                 structure = demoShip();
-                noteKey = MSG_OVERSIZE;
             }
         }
 
         int w = maxSize(structure.keySet()).getX() + 1;
         int d = maxSize(structure.keySet()).getZ() + 1;
-        int count = structure.size();
 
         boolean doubleSpot = (2L * w + 1) < BOUNDS_X - 2 && d < BOUNDS_Z - 2;
         int shift = doubleSpot ? w + 1 : 0;
@@ -112,7 +102,7 @@ public class ShipInBottlePonder {
         scene.idle(18);
 
         scene.overlay().showText(70)
-            .text("This is the physics structure saved in the bottle: %s blocks", count)
+            .text("This is the physics structure saved in the bottle")
             .pointAt(centerA)
             .placeNearTarget();
         scene.idle(95);
@@ -155,10 +145,7 @@ public class ShipInBottlePonder {
             .placeNearTarget();
         scene.idle(95);
 
-        scene.overlay().showText(90)
-            .text("Note: %s", I18n.get(noteKey))
-            .independent(30);
-        scene.idle(60);
+        scene.idle(40);
 
         scene.markAsFinished();
     }
