@@ -5,6 +5,6 @@
   "text.sableinbottle.ship_bottled": "船只已收进瓶中！",
   "text.sableinbottle.ship_released": "船只已释放！",
   "text.sableinbottle.invalid_ship": "无效的船只数据！",
-  "text.sableinbottle.missing_blocks": "瓶中船包含未安装模组的方块，已替换为空气：%s"
+  "text.sableinbottle.missing_blocks": "瓶中船包含未安装模组的方块，已替换为空气：%s",
   "text.sableinbottle.bottle_contains": "瓶中装着一艘船"
 }

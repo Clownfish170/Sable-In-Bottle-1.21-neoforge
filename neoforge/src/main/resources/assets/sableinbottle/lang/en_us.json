@@ -5,6 +5,6 @@
   "text.sableinbottle.ship_bottled": "Ship bottled successfully!",
   "text.sableinbottle.ship_released": "Ship released!",
   "text.sableinbottle.invalid_ship": "Invalid ship data!",
-  "text.sableinbottle.missing_blocks": "Bottled ship contains blocks from uninstalled mods, replaced with air: %s"
+  "text.sableinbottle.missing_blocks": "Bottled ship contains blocks from uninstalled mods, replaced with air: %s",
   "text.sableinbottle.bottle_contains": "Contains a ship"
 }
