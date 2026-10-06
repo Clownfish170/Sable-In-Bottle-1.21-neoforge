@@ -92,8 +92,10 @@ public class ShipInBottlePonder {
         Vec3 topA = new Vec3(centerA.x, maxY(blocksA.keySet()) + 1.5, centerA.z);
         Vec3 topB = new Vec3(centerB.x, maxY(blocksB.keySet()) + 1.5, centerB.z);
 
+        // The base plate is the y=0 checker layer of the schematic, cropped to this
+        // square: grow it with the structure so the whole footprint always sits on it.
         int spanX = shift > 0 ? shift + w : w;
-        int plateSize = Math.min(BOUNDS_X, Math.max(7, spanX + 4));
+        int plateSize = Math.min(BOUNDS_X - 1, Math.max(7, Math.max(spanX, d) + 3));
         scene.configureBasePlate(1, 1, plateSize);
         scene.showBasePlate();
         scene.scaleSceneView(Math.max(0.45f, Math.min(1f, 10f / plateSize)));
