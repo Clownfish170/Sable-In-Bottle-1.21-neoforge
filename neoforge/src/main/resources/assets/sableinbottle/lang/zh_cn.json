@@ -8,8 +8,8 @@
   "text.sableinbottle.missing_blocks": "瓶中船包含未安装模组的方块，已替换为空气：%s",
   "text.sableinbottle.bottle_contains": "瓶中装着一艘船",
   "sableinbottle.ponder.bottle.header": "瓶中船",
-  "sableinbottle.ponder.bottle.text_0": "这就是瓶中保存的物理结构",
-  "sableinbottle.ponder.bottle.text_1": "方块实体、刻度与结构数据都被完整序列化",
-  "sableinbottle.ponder.bottle.text_2": "保存的只是数据，与坐标无关——可以带它去任何地方",
-  "sableinbottle.ponder.bottle.text_3": "释放时会出现在你指向的位置"
+  "sableinbottle.ponder.bottle.text_1": "这就是瓶中保存的物理结构",
+  "sableinbottle.ponder.bottle.text_2": "方块实体、刻度与结构数据都被完整序列化",
+  "sableinbottle.ponder.bottle.text_3": "保存的只是数据，与坐标无关——可以带它去任何地方",
+  "sableinbottle.ponder.bottle.text_4": "释放时会出现在你指向的位置"
 }

@@ -8,8 +8,8 @@
   "text.sableinbottle.missing_blocks": "Bottled ship contains blocks from uninstalled mods, replaced with air: %s",
   "text.sableinbottle.bottle_contains": "Contains a ship",
   "sableinbottle.ponder.bottle.header": "Ship in a Bottle",
-  "sableinbottle.ponder.bottle.text_0": "This is the physics structure saved in the bottle",
-  "sableinbottle.ponder.bottle.text_1": "Block entities, ticks and structure data are serialized in full",
-  "sableinbottle.ponder.bottle.text_2": "Saved data is not tied to coordinates - take it anywhere",
-  "sableinbottle.ponder.bottle.text_3": "On release it appears where you point"
+  "sableinbottle.ponder.bottle.text_1": "This is the physics structure saved in the bottle",
+  "sableinbottle.ponder.bottle.text_2": "Block entities, ticks and structure data are serialized in full",
+  "sableinbottle.ponder.bottle.text_3": "Saved data is not tied to coordinates - take it anywhere",
+  "sableinbottle.ponder.bottle.text_4": "On release it appears where you point"
 }
