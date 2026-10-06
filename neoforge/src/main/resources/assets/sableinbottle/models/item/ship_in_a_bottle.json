@@ -1,0 +1,14 @@
+{
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "sableinbottle:item/ship_in_a_bottle"
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "sableinbottle:has_ship": 1
+      },
+      "model": "sableinbottle:item/ship_in_a_bottle_full"
+    }
+  ]
+}

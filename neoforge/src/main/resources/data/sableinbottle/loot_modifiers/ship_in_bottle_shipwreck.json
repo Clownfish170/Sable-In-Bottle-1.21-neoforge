@@ -1,8 +1,8 @@
 {
-  "type": "nautical:ship_in_bottle",
+  "type": "sableinbottle:ship_in_bottle",
   "chance": 0.3,
   "item": {
-    "id": "nautical:ship_in_a_bottle",
+    "id": "sableinbottle:ship_in_a_bottle",
     "count": 1
   },
   "conditions": [

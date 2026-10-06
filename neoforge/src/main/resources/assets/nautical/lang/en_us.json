@@ -1,9 +1,0 @@
-{
-  "nautical.tab": "Sable in Battle",
-  "item.nautical.ship_in_a_bottle": "Ship in a Bottle",
-  "text.nautical.not_on_ship": "You must be standing on a ship!",
-  "text.nautical.ship_bottled": "Ship bottled successfully!",
-  "text.nautical.ship_released": "Ship released!",
-  "text.nautical.invalid_ship": "Invalid ship data!",
-  "text.nautical.bottle_contains": "Contains a ship"
-}

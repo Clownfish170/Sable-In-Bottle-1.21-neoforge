@@ -1,0 +1,10 @@
+{
+  "itemGroup.sableinbottle.main": "Sable in Bottle",
+  "item.sableinbottle.ship_in_a_bottle": "Ship in a Bottle",
+  "text.sableinbottle.not_on_ship": "You must be standing on a ship!",
+  "text.sableinbottle.ship_bottled": "Ship bottled successfully!",
+  "text.sableinbottle.ship_released": "Ship released!",
+  "text.sableinbottle.invalid_ship": "Invalid ship data!",
+  "text.sableinbottle.missing_blocks": "Bottled ship contains blocks from uninstalled mods, replaced with air: %s"
+  "text.sableinbottle.bottle_contains": "Contains a ship"
+}

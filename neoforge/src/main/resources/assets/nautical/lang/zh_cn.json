@@ -1,9 +1,0 @@
-{
-  "nautical.tab": "Sable in Battle",
-  "item.nautical.ship_in_a_bottle": "瓶中船",
-  "text.nautical.not_on_ship": "你必须站在船上！",
-  "text.nautical.ship_bottled": "船只已收进瓶中！",
-  "text.nautical.ship_released": "船只已释放！",
-  "text.nautical.invalid_ship": "无效的船只数据！",
-  "text.nautical.bottle_contains": "瓶中装着一艘船"
-}

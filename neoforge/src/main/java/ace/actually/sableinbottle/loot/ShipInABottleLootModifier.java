@@ -1,4 +1,4 @@
-package ace.actually.nautical.loot;
+package ace.actually.sableinbottle.loot;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -9,20 +9,20 @@ import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.neoforged.neoforge.common.loot.IGlobalLootModifier;
 import net.neoforged.neoforge.common.loot.LootModifier;
 
-public class ShipInBottleLootModifier extends LootModifier {
-    public static final MapCodec<ShipInBottleLootModifier> CODEC = RecordCodecBuilder.mapCodec(inst ->
+public class ShipInABottleLootModifier extends LootModifier {
+    public static final MapCodec<ShipInABottleLootModifier> CODEC = RecordCodecBuilder.mapCodec(inst ->
             codecStart(inst).and(
                     inst.group(
                             ItemStack.CODEC.fieldOf("item").forGetter(m -> m.item),
                             com.mojang.serialization.Codec.FLOAT.fieldOf("chance").forGetter(m -> m.chance)
                     )
-            ).apply(inst, ShipInBottleLootModifier::new)
+            ).apply(inst, ShipInABottleLootModifier::new)
     );
 
     private final ItemStack item;
     private final float chance;
 
-    public ShipInBottleLootModifier(LootItemCondition[] conditionsIn, ItemStack item, float chance) {
+    public ShipInABottleLootModifier(LootItemCondition[] conditionsIn, ItemStack item, float chance) {
         super(conditionsIn);
         this.item = item;
         this.chance = chance;
