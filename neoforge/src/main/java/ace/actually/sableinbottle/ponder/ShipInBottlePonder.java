@@ -1,6 +1,12 @@
 package ace.actually.sableinbottle.ponder;
 
 import ace.actually.sableinbottle.ModItems;
+import ace.actually.sableinbottle.SableInBottle;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import net.createmod.catnip.math.Pointing;
 import net.createmod.ponder.api.PonderPalette;
 import net.createmod.ponder.api.element.ElementLink;
@@ -24,6 +30,9 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -42,14 +51,52 @@ public class ShipInBottlePonder {
     /** Last hovered bottle stack, kept fresh by the tooltip callback registered on client setup. */
     public static ItemStack lastHoveredBottle = ItemStack.EMPTY;
 
-    private static final int BOUNDS_X = 24;
-    private static final int BOUNDS_Y = 20;
-    private static final int BOUNDS_Z = 24;
+    private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+
+    /**
+     * Upper bound of a structure the scene can preview, loaded lazily from
+     * {@code config/sableinbottle.json} so oversized ships can be allowed without a rebuild.
+     */
+    private static int[] maxSize = {48, 32, 48};
+
+    private static int[] previewLimit() {
+        try {
+            Path file = Minecraft.getInstance().gameDirectory.toPath()
+                .resolve("config").resolve("sableinbottle.json");
+            if (!Files.exists(file)) {
+                JsonObject json = new JsonObject();
+                JsonArray size = new JsonArray();
+                size.add(maxSize[0]);
+                size.add(maxSize[1]);
+                size.add(maxSize[2]);
+                json.add("max_structure_size", size);
+                Files.createDirectories(file.getParent());
+                Files.writeString(file, GSON.toJson(json) + System.lineSeparator());
+            }
+            JsonObject json = JsonParser.parseString(Files.readString(file)).getAsJsonObject();
+            if (json.has("max_structure_size")) {
+                JsonArray size = json.getAsJsonArray("max_structure_size");
+                if (size.size() >= 3) {
+                    maxSize = new int[]{
+                        Math.max(1, size.get(0).getAsInt()),
+                        Math.max(1, size.get(1).getAsInt()),
+                        Math.max(1, size.get(2).getAsInt()),
+                    };
+                }
+            }
+        } catch (Exception e) {
+            SableInBottle.LOGGER.warn("Could not read sableinbottle.json, using default preview limit", e);
+        }
+        return maxSize;
+    }
 
     public static void bottledShip(SceneBuilder scene, SceneBuildingUtil util) {
         scene.title("bottle", "Ship in a Bottle");
 
+        int[] limit = previewLimit();
+
         Map<BlockPos, BlockState> structure;
+        boolean oversized = false;
 
         Map<BlockPos, BlockState> saved = decodeSavedStructure();
         if (saved == null) {
@@ -57,17 +104,18 @@ public class ShipInBottlePonder {
         } else {
             Map<BlockPos, BlockState> normalized = normalize(saved);
             BlockPos size = maxSize(normalized.keySet());
-            if (size.getX() < BOUNDS_X - 1 && size.getY() < BOUNDS_Y - 1 && size.getZ() < BOUNDS_Z - 1) {
+            if (size.getX() < limit[0] - 1 && size.getY() < limit[1] - 1 && size.getZ() < limit[2] - 1) {
                 structure = normalized;
             } else {
                 structure = demoShip();
+                oversized = true;
             }
         }
 
         int w = maxSize(structure.keySet()).getX() + 1;
         int d = maxSize(structure.keySet()).getZ() + 1;
 
-        boolean doubleSpot = (2L * w + 1) < BOUNDS_X - 2 && d < BOUNDS_Z - 2;
+        boolean doubleSpot = (2L * w + 1) < limit[0] - 2 && d < limit[2] - 2;
         int shift = doubleSpot ? w + 1 : 0;
 
         BlockPos originA = new BlockPos(2, 1, 2);
@@ -85,14 +133,27 @@ public class ShipInBottlePonder {
         // The base plate is the y=0 checker layer of the schematic, cropped to this
         // square: grow it with the structure so the whole footprint always sits on it.
         int spanX = shift > 0 ? shift + w : w;
-        int plateSize = Math.min(BOUNDS_X - 1, Math.max(7, Math.max(spanX, d) + 3));
+        int plateSize = Math.min(limit[0] - 1, Math.max(7, Math.max(spanX, d) + 3));
         scene.configureBasePlate(1, 1, plateSize);
         scene.showBasePlate();
-        scene.scaleSceneView(Math.max(0.45f, Math.min(1f, 10f / plateSize)));
+        scene.scaleSceneView(Math.max(0.3f, Math.min(1f, 10f / plateSize)));
 
         ItemStack bottle = new ItemStack(ModItems.SHIP_IN_A_BOTTLE.get());
 
         scene.special().movePointOfInterest(centerA);
+
+        if (oversized) {
+            scene.overlay().showText(90)
+                .text("The saved structure exceeds the preview limit, showing a stand-in instead")
+                .pointAt(centerA)
+                .placeNearTarget();
+            scene.idle(100);
+            scene.overlay().showText(90)
+                .text("Raise max_structure_size in config/sableinbottle.json to preview it")
+                .pointAt(centerA)
+                .placeNearTarget();
+            scene.idle(100);
+        }
 
         for (Map.Entry<BlockPos, BlockState> entry : blocksA.entrySet()) {
             scene.world().setBlock(entry.getKey(), entry.getValue(), false);
@@ -240,7 +301,106 @@ public class ShipInBottlePonder {
             return null;
         }
 
-        return blocks.isEmpty() ? null : blocks;
+        if (blocks.isEmpty()) return null;
+
+        // The plot stores geometry in the sublevel's body frame; the pose orientation
+        // maps it to the world frame the player saw before bottling. Without this the
+        // preview shows the raw plot frame, which can be upside down (verified against
+        // saved bottles whose pose is a 180 degree flip). Snapping to the nearest cube
+        // rotation keeps every block on the integer lattice.
+        CompoundTag orientation = tag.getCompound("ship").getCompound("pose").getCompound("orientation");
+        return applyPoseOrientation(blocks, orientation);
+    }
+
+    /** The 24 proper rotations of the cube, as row-major 3x3 matrices with det +1. */
+    private static final int[][] CUBE_ROTATIONS = buildCubeRotations();
+
+    private static int[][] buildCubeRotations() {
+        List<int[]> out = new ArrayList<>(24);
+        int[] perm = {0, 1, 2};
+        do {
+            for (int signs = 0; signs < 8; signs++) {
+                int[] m = new int[9];
+                int sx = (signs & 1) == 0 ? 1 : -1;
+                int sy = (signs & 2) == 0 ? 1 : -1;
+                int sz = (signs & 4) == 0 ? 1 : -1;
+                m[perm[0]] = sx;
+                m[3 + perm[1]] = sy;
+                m[6 + perm[2]] = sz;
+                int det = m[0] * (m[4] * m[8] - m[5] * m[7])
+                    - m[1] * (m[3] * m[8] - m[5] * m[6])
+                    + m[2] * (m[3] * m[7] - m[4] * m[6]);
+                if (det > 0) out.add(m);
+            }
+        } while (nextPermutation(perm));
+        return out.toArray(new int[0][]);
+    }
+
+    private static boolean nextPermutation(int[] a) {
+        int i = a.length - 2;
+        while (i >= 0 && a[i] >= a[i + 1]) i--;
+        if (i < 0) return false;
+        int j = a.length - 1;
+        while (a[j] <= a[i]) j--;
+        int t = a[i];
+        a[i] = a[j];
+        a[j] = t;
+        for (int l = i + 1, r = a.length - 1; l < r; l++, r--) {
+            t = a[l];
+            a[l] = a[r];
+            a[r] = t;
+        }
+        return true;
+    }
+
+    /**
+     * Rotates the decoded plot blocks by the bottle's stored pose orientation, replaced
+     * by the closest axis-aligned cube rotation so the result stays a valid block grid.
+     * Missing or degenerate orientations leave the blocks untouched.
+     */
+    private static Map<BlockPos, BlockState> applyPoseOrientation(
+        Map<BlockPos, BlockState> blocks, CompoundTag orientation
+    ) {
+        if (orientation.isEmpty()) return blocks;
+
+        double x = orientation.getDouble("x");
+        double y = orientation.getDouble("y");
+        double z = orientation.getDouble("z");
+        double w = orientation.getDouble("w");
+        double len = Math.sqrt(x * x + y * y + z * z + w * w);
+        if (len < 1.0E-6) return blocks;
+        x /= len;
+        y /= len;
+        z /= len;
+        w /= len;
+
+        double[] m = {
+            1 - 2 * (y * y + z * z), 2 * (x * y - z * w), 2 * (x * z + y * w),
+            2 * (x * y + z * w), 1 - 2 * (x * x + z * z), 2 * (y * z - x * w),
+            2 * (x * z - y * w), 2 * (y * z + x * w), 1 - 2 * (x * x + y * y),
+        };
+
+        int[] best = CUBE_ROTATIONS[0];
+        double bestScore = -Double.MAX_VALUE;
+        for (int[] candidate : CUBE_ROTATIONS) {
+            double score = 0;
+            for (int i = 0; i < 9; i++) score += m[i] * candidate[i];
+            if (score > bestScore) {
+                bestScore = score;
+                best = candidate;
+            }
+        }
+
+        Map<BlockPos, BlockState> out = new LinkedHashMap<>();
+        for (Map.Entry<BlockPos, BlockState> entry : blocks.entrySet()) {
+            BlockPos p = entry.getKey();
+            out.put(new BlockPos(
+                best[0] * p.getX() + best[1] * p.getY() + best[2] * p.getZ(),
+                best[3] * p.getX() + best[4] * p.getY() + best[5] * p.getZ(),
+                best[6] * p.getX() + best[7] * p.getY() + best[8] * p.getZ()
+            ), entry.getValue());
+        }
+        return out;
     }
 
     // ------------------------------------------------------------------
