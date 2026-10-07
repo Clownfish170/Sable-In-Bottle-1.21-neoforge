@@ -1,5 +1,7 @@
 package ace.actually.sableinbottle;
 
+import ace.actually.sableinbottle.ModBlockEntities;
+import ace.actually.sableinbottle.client.ShipInBottleRenderer;
 import ace.actually.sableinbottle.ponder.ShipInBottlePonder;
 import ace.actually.sableinbottle.ponder.ShipInBottlePonderPlugin;
 import net.createmod.ponder.foundation.PonderIndex;
@@ -11,6 +13,7 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 
 @EventBusSubscriber(modid = SableInBottle.MOD_ID, value = Dist.CLIENT)
 public class SableInBottleClient {
@@ -28,6 +31,12 @@ public class SableInBottleClient {
             PonderIndex.addPlugin(new ShipInBottlePonderPlugin());
             PonderTooltipHandler.registerHoveredPonderStackCallback(SableInBottleClient::trackHoveredBottle);
         });
+    }
+
+    @SubscribeEvent
+    public static void onRegisterRenderers(EntityRenderersEvent.RegisterRenderers event) {
+        event.registerBlockEntityRenderer(
+            ModBlockEntities.SHIP_IN_BOTTLE.get(), ShipInBottleRenderer::new);
     }
 
     private static void trackHoveredBottle(ItemStack stack) {
