@@ -1,7 +1,14 @@
 {
-  "variants": {
-    "": {
-      "model": "sableinbottle:block/bottle"
+  "multipart": [
+    {
+      "apply": {
+        "model": "sableinbottle:block/bottle_shell"
+      }
+    },
+    {
+      "apply": {
+        "model": "sableinbottle:block/bottle_cork"
+      }
     }
-  }
+  ]
 }

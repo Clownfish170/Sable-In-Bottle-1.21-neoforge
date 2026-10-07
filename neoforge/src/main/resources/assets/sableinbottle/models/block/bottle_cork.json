@@ -1,0 +1,81 @@
+{
+  "credit": "Made with Blockbench",
+  "ambientocclusion": true,
+  "gui_light": "front",
+  "textures": {
+    "glass": "minecraft:block/glass",
+    "cork": "minecraft:block/oak_planks",
+    "particle": "minecraft:block/glass"
+  },
+  "elements": [
+    {
+      "name": "cork",
+      "from": [
+        3.75,
+        0.75,
+        0
+      ],
+      "to": [
+        12.25,
+        9.25,
+        3
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            0.0,
+            0.0,
+            16.0,
+            16.0
+          ],
+          "texture": "#cork"
+        },
+        "east": {
+          "uv": [
+            0.0,
+            0.0,
+            16.0,
+            16.0
+          ],
+          "texture": "#cork"
+        },
+        "north": {
+          "uv": [
+            0.0,
+            0.0,
+            16.0,
+            16.0
+          ],
+          "texture": "#cork"
+        },
+        "south": {
+          "uv": [
+            0.0,
+            0.0,
+            16.0,
+            16.0
+          ],
+          "texture": "#cork"
+        },
+        "up": {
+          "uv": [
+            0.0,
+            0.0,
+            16.0,
+            16.0
+          ],
+          "texture": "#cork"
+        },
+        "west": {
+          "uv": [
+            0.0,
+            0.0,
+            16.0,
+            16.0
+          ],
+          "texture": "#cork"
+        }
+      }
+    }
+  ]
+}

@@ -106,8 +106,10 @@ public class ShipInBottlePonder {
             }
         }
 
-        int w = maxSize(structure.keySet()).getX() + 1;
-        int d = maxSize(structure.keySet()).getZ() + 1;
+        BlockPos span = maxSize(structure.keySet());
+        int w = span.getX() + 1;
+        int d = span.getZ() + 1;
+        int h = span.getY() + 1;
 
         boolean doubleSpot = (2L * w + 1) < limit[0] - 2 && d < limit[2] - 2;
         int shift = doubleSpot ? w + 1 : 0;
@@ -130,7 +132,13 @@ public class ShipInBottlePonder {
         int plateSize = Math.min(limit[0] - 1, Math.max(7, Math.max(spanX, d) + 3));
         scene.configureBasePlate(1, 1, plateSize);
         scene.showBasePlate();
-        scene.scaleSceneView(Math.max(0.3f, Math.min(1f, 10f / plateSize)));
+        // Zoom out for both footprint and height: the visible half-height of the
+        // scene is ~5.5 blocks at scale 1, so a structure taller than ~10 blocks
+        // used to run off the top of the panel. setSceneOffsetY then slides the
+        // view centre from the plate (y=1) to the structure's mid-height.
+        float viewScale = Math.min(10f / plateSize, 9f / (h + 1));
+        scene.scaleSceneView(Math.max(0.15f, Math.min(1f, viewScale)));
+        scene.setSceneOffsetY((1 - h) / 2f);
 
         ItemStack bottle = new ItemStack(ModItems.SHIP_IN_A_BOTTLE.get());
 
