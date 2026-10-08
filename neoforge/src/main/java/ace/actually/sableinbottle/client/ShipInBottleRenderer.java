@@ -48,6 +48,23 @@ public class ShipInBottleRenderer implements BlockEntityRenderer<ShipInBottleBlo
     private static final Vec3 CAVITY_MIN = new Vec3(4.0, 1.0, 3.5);
     private static final Vec3 CAVITY_MAX = new Vec3(12.0, 9.0, 12.5);
 
+    /**
+     * Fraction of the cavity the structure may occupy. The leftover ring of air
+     * keeps the miniature from touching the glass, which both reads better and
+     * leaves room for the floating bob below.
+     */
+    private static final float FILL_FACTOR = 0.85f;
+
+    /** Bob period in seconds; one gentle rise and sink per ~3s. */
+    private static final float BOB_PERIOD_TICKS = 60.0f;
+
+    /**
+     * Vertical travel of the bob in block units. Sized to stay inside the gap
+     * left by {@link #FILL_FACTOR} even when the structure's tallest axis is
+     * what determined the scale, so the miniature never pokes through glass.
+     */
+    private static final float BOB_AMPLITUDE = 0.03f;
+
     private final RandomSource random = RandomSource.create();
 
     public ShipInBottleRenderer(BlockEntityRendererProvider.Context context) {
@@ -76,15 +93,25 @@ public class ShipInBottleRenderer implements BlockEntityRenderer<ShipInBottleBlo
         double scale = Math.min(
             Math.min(cavitySize.x / 16.0 / w, cavitySize.y / 16.0 / h),
             cavitySize.z / 16.0 / d
-        );
+        ) * FILL_FACTOR;
         Vec3 center = CAVITY_MIN.add(cavitySize.scale(0.5)).scale(1.0 / 16.0);
+
+        // Gentle vertical bob so the bottled structure reads as suspended in the
+        // glass instead of welded into it. Phase is derived from the position so
+        // neighbouring bottles don't bob in lockstep. Pure sine on the pose stack
+        // - the per-block geometry work is unchanged, so this is effectively free.
+        double gameTime = level.getGameTime() + partialTick;
+        BlockPos bottlePos = bottle.getBlockPos();
+        double phase = (bottlePos.getX() * 3 + bottlePos.getY() * 7 + bottlePos.getZ() * 11)
+            % Math.round(BOB_PERIOD_TICKS);
+        float bob = (float) (Math.sin((gameTime + phase) / BOB_PERIOD_TICKS * Math.PI * 2.0) * BOB_AMPLITUDE);
 
         StructureView view = new StructureView(structure, level, bottle.getBlockPos(), packedLight);
         BlockRenderDispatcher dispatcher = Minecraft.getInstance().getBlockRenderer();
 
         poseStack.pushPose();
         // Model units to block units, then fit the structure around the cavity centre.
-        poseStack.translate(center.x, center.y, center.z);
+        poseStack.translate(center.x, center.y + bob, center.z);
         poseStack.scale((float) scale, (float) scale, (float) scale);
         poseStack.translate(-w / 2.0, -h / 2.0, -d / 2.0);
 
