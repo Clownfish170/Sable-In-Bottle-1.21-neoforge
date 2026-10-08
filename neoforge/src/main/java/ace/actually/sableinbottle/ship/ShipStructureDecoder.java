@@ -1,11 +1,15 @@
 package ace.actually.sableinbottle.ship;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
+import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.Property;
+import net.minecraft.world.level.block.state.properties.RailShape;
 import net.minecraft.world.level.ChunkPos;
 
 import java.util.ArrayList;
@@ -148,6 +152,32 @@ public final class ShipStructureDecoder {
     /** The 24 proper rotations of the cube, as row-major 3x3 matrices with det +1. */
     private static final int[][] CUBE_ROTATIONS = buildCubeRotations();
 
+    private static final int[] ROT_IDENTITY = {1, 0, 0, 0, 1, 0, 0, 0, 1};
+
+    /**
+     * One representative per coset of the yaw subgroup, so every cube rotation R
+     * decomposes uniquely as R = yaw * base. yaw is handled by vanilla
+     * {@link Rotation}; base needs manual property handling (see rotateState).
+     */
+    private static final int[][] FLIP_BASES = {
+        {1, 0, 0, 0, 1, 0, 0, 0, 1},        // identity
+        {1, 0, 0, 0, -1, 0, 0, 0, -1},      // 180 deg about X (upside down)
+        {1, 0, 0, 0, 0, -1, 0, 1, 0},       // 90 deg about X
+        {1, 0, 0, 0, 0, 1, 0, -1, 0},       // 270 deg about X
+        {0, -1, 0, 1, 0, 0, 0, 0, 1},       // 90 deg about Z
+        {0, 1, 0, -1, 0, 0, 0, 0, 1},       // 270 deg about Z
+    };
+
+    /** Inverses of FLIP_BASES (transpose of each rotation). */
+    private static final int[][] FLIP_BASES_INVERSE = {
+        {1, 0, 0, 0, 1, 0, 0, 0, 1},
+        {1, 0, 0, 0, -1, 0, 0, 0, -1},
+        {1, 0, 0, 0, 0, 1, 0, -1, 0},
+        {1, 0, 0, 0, 0, -1, 0, 1, 0},
+        {0, 1, 0, -1, 0, 0, 0, 0, 1},
+        {0, -1, 0, 1, 0, 0, 0, 0, -1},
+    };
+
     private static int[][] buildCubeRotations() {
         List<int[]> out = new ArrayList<>(24);
         int[] perm = {0, 1, 2};
@@ -231,8 +261,231 @@ public final class ShipStructureDecoder {
                 best[0] * p.getX() + best[1] * p.getY() + best[2] * p.getZ(),
                 best[3] * p.getX() + best[4] * p.getY() + best[5] * p.getZ(),
                 best[6] * p.getX() + best[7] * p.getY() + best[8] * p.getZ()
-            ), entry.getValue());
+            ), rotateState(entry.getValue(), best));
         }
         return out;
+    }
+
+    /**
+     * Rotates a block state by the same cube rotation applied to positions, so
+     * facings/axes/halves match what the ship looked like in the world (the
+     * sublevel is rendered with the pose baked into the mesh).
+     *
+     * <p>The rotation is split into a yaw part and a base part:
+     * {@code m = yaw * base}. The yaw goes through vanilla {@link Rotation},
+     * which every block already implements correctly (stairs shapes, rails,
+     * walls, ...). The base part - one of six flip/tilt representatives - is
+     * applied property by property: directions and axes are transformed by the
+     * matrix, TOP/BOTTOM and UPPER/LOWER swap when the base inverts Y, and
+     * left/right labels swap with it. Properties a base cannot express (a ship
+     * rolled onto its side turns horizontal facings vertical, which e.g. a
+     * furnace cannot represent) keep their original value - a best effort, and
+     * the only option, since vanilla block states cannot express those poses.
+     */
+    private static BlockState rotateState(BlockState state, int[] m) {
+        if (isIdentity(m)) return state;
+
+        // Decompose m = yaw * base; base is the unique representative with the
+        // same image of +Y as m (yaw fixes +Y).
+        int base = -1;
+        int[] yaw = null;
+        for (int i = 0; i < FLIP_BASES.length; i++) {
+            int[] candidate = multiplyMatrices(m, FLIP_BASES_INVERSE[i]);
+            if (isYawRotation(candidate)) {
+                base = i;
+                yaw = candidate;
+                break;
+            }
+        }
+        if (base < 0) return state; // unreachable for cube rotations
+
+        BlockState out = state;
+        if (base != 0) out = applyBaseRotation(out, FLIP_BASES[base]);
+        Rotation rotation = yawRotationOf(yaw);
+        if (rotation != Rotation.NONE) out = out.rotate(rotation);
+        return out;
+    }
+
+    private static boolean isIdentity(int[] m) {
+        for (int i = 0; i < 9; i++) {
+            if (m[i] != ROT_IDENTITY[i]) return false;
+        }
+        return true;
+    }
+
+    /** A proper rotation about +Y keeps Y fixed and leaves the XZ plane invariant. */
+    private static boolean isYawRotation(int[] m) {
+        return m[3] == 0 && m[4] == 1 && m[5] == 0 && m[7] == 0;
+    }
+
+    private static int[] multiplyMatrices(int[] a, int[] b) {
+        int[] r = new int[9];
+        for (int row = 0; row < 3; row++) {
+            for (int col = 0; col < 3; col++) {
+                r[row * 3 + col] =
+                    a[row * 3] * b[col]
+                        + a[row * 3 + 1] * b[3 + col]
+                        + a[row * 3 + 2] * b[6 + col];
+            }
+        }
+        return r;
+    }
+
+    /** Maps a yaw matrix to vanilla's Rotation via where it sends EAST. */
+    private static Rotation yawRotationOf(int[] m) {
+        // image of EAST = first column (m0, m3, m6)
+        int ex = m[0], ey = m[3], ez = m[6];
+        if (ex == 1 && ey == 0 && ez == 0) return Rotation.NONE;
+        if (ex == 0 && ey == 0 && ez == 1) return Rotation.CLOCKWISE_90;   // EAST -> SOUTH
+        if (ex == -1 && ey == 0 && ez == 0) return Rotation.CLOCKWISE_180;
+        if (ex == 0 && ey == 0 && ez == -1) return Rotation.COUNTERCLOCKWISE_90; // EAST -> NORTH
+        return Rotation.NONE;
+    }
+
+    /** Applies one of the five non-identity base rotations to a block state. */
+    private static BlockState applyBaseRotation(BlockState state, int[] base) {
+        boolean invertY = base[1] == 0 && base[4] == -1 && base[7] == 0; // +Y maps to -Y
+        Map<Property<?>, Object> changes = new LinkedHashMap<>();
+
+        for (Property<?> property : state.getProperties()) {
+            Object value = state.getValue(property);
+            if (value instanceof Direction dir) {
+                Direction rotated = transformDirection(dir, base);
+                if (rotated != null && property.getPossibleValues().contains(rotated)) {
+                    changes.put(property, rotated);
+                }
+            } else if (value instanceof Direction.Axis axis) {
+                Direction rotated = transformDirection(axisDirection(axis), base);
+                if (rotated != null) {
+                    Direction.Axis newAxis = rotated.getAxis();
+                    if (property.getPossibleValues().contains(newAxis)) {
+                        changes.put(property, newAxis);
+                    }
+                }
+            } else if (value instanceof RailShape shape && invertY) {
+                RailShape mapped = mapRailShapeFlip(shape);
+                if (mapped != null) changes.put(property, mapped);
+            } else if (value instanceof Boolean connected && isConnectionName(property.getName())) {
+                // walls/fences/panes: connections follow their side direction
+                Direction side = directionByName(property.getName());
+                Direction source = side == null ? null : transformDirection(side, invert(base));
+                Boolean old = Boolean.FALSE;
+                if (source != null) {
+                    for (Property<?> other : state.getProperties()) {
+                        if (other.getName().equals(source.getName())
+                            && state.getValue(other) instanceof Boolean b) {
+                            old = b;
+                            break;
+                        }
+                    }
+                }
+                changes.put(property, old);
+            } else if (value instanceof Enum<?> enumValue && invertY) {
+                String flipped = flipEnumName(enumValue.name());
+                if (flipped != null && !flipped.equals(enumValue.name())) {
+                    for (Object candidate : property.getPossibleValues()) {
+                        if (candidate instanceof Enum<?> ce && ce.name().equals(flipped)) {
+                            changes.put(property, candidate);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        BlockState out = state;
+        for (Map.Entry<Property<?>, Object> change : changes.entrySet()) {
+            out = setProperty(out, change.getKey(), change.getValue());
+        }
+        return out;
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private static BlockState setProperty(BlockState state, Property<?> property, Object value) {
+        // raw types: the value always comes from property.getPossibleValues()
+        return state.setValue((Property) property, (Comparable) value);
+    }
+
+    private static boolean isConnectionName(String name) {
+        return name.equals("north") || name.equals("east") || name.equals("south")
+            || name.equals("west") || name.equals("up") || name.equals("down");
+    }
+
+    private static Direction directionByName(String name) {
+        switch (name) {
+            case "north": return Direction.NORTH;
+            case "east": return Direction.EAST;
+            case "south": return Direction.SOUTH;
+            case "west": return Direction.WEST;
+            case "up": return Direction.UP;
+            case "down": return Direction.DOWN;
+            default: return null;
+        }
+    }
+
+    private static Direction axisDirection(Direction.Axis axis) {
+        switch (axis) {
+            case X: return Direction.EAST;
+            case Y: return Direction.UP;
+            default: return Direction.NORTH;
+        }
+    }
+
+    private static int[] invert(int[] m) {
+        // rotation matrices are orthogonal: inverse == transpose
+        return new int[]{
+            m[0], m[3], m[6],
+            m[1], m[4], m[7],
+            m[2], m[5], m[8],
+        };
+    }
+
+    private static Direction transformDirection(Direction dir, int[] m) {
+        int x = dir.getStepX(), y = dir.getStepY(), z = dir.getStepZ();
+        int nx = m[0] * x + m[1] * y + m[2] * z;
+        int ny = m[3] * x + m[4] * y + m[5] * z;
+        int nz = m[6] * x + m[7] * y + m[8] * z;
+        for (Direction candidate : Direction.values()) {
+            if (candidate.getStepX() == nx && candidate.getStepY() == ny && candidate.getStepZ() == nz) {
+                return candidate;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Renames TOP/BOTTOM, UPPER/LOWER, FLOOR/CEILING and LEFT/RIGHT pairs for an
+     * upside-down flip; returns null when the name has no flipped form.
+     */
+    private static String flipEnumName(String name) {
+        switch (name) {
+            case "TOP": return "BOTTOM";
+            case "BOTTOM": return "TOP";
+            case "UPPER": return "LOWER";
+            case "LOWER": return "UPPER";
+            case "FLOOR": return "CEILING";
+            case "CEILING": return "FLOOR";
+            default: break;
+        }
+        if (name.contains("LEFT") && !name.contains("RIGHT")) return name.replace("LEFT", "RIGHT");
+        if (name.contains("RIGHT") && !name.contains("LEFT")) return name.replace("RIGHT", "LEFT");
+        return null;
+    }
+
+    /**
+     * Rail shapes under an upside-down flip: slope along Z survives the double
+     * flip (Y and Z both invert), slope along X reverses, and curve corners
+     * follow their north/south edge. Returns null when unchanged.
+     */
+    private static RailShape mapRailShapeFlip(RailShape shape) {
+        switch (shape) {
+            case ASCENDING_EAST: return RailShape.ASCENDING_WEST;
+            case ASCENDING_WEST: return RailShape.ASCENDING_EAST;
+            case NORTH_EAST: return RailShape.SOUTH_EAST;
+            case NORTH_WEST: return RailShape.SOUTH_WEST;
+            case SOUTH_EAST: return RailShape.NORTH_EAST;
+            case SOUTH_WEST: return RailShape.NORTH_WEST;
+            default: return null; // north_south, east_west, ascending north/south survive
+        }
     }
 }
