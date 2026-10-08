@@ -111,100 +111,110 @@ public class ShipInBottlePonder {
         int d = span.getZ() + 1;
         int h = span.getY() + 1;
 
-        boolean doubleSpot = (2L * w + 1) < limit[0] - 2 && d < limit[2] - 2;
-        int shift = doubleSpot ? w + 1 : 0;
+        // The schematic's checker plate covers x/z 0..47 with the plate origin
+        // at (1,1): anything larger silently draws as air, so clamp to it
+        // on top of the configured size limit.
+        int maxPlate = Math.min(47, limit[0] - 1);
+        int plateSize = Math.min(maxPlate, Math.max(7, Math.max(w, d) + 3));
+        // The camera looks at (plateSize/2 + offset) regardless of structure size,
+        // so make plateSize share parity with the structure width: the centre then
+        // lands exactly on the view centre instead of half a block off. (When w
+        // and d differ in parity the z axis stays <= 0.5 block off.)
+        if (plateSize < maxPlate && ((plateSize - w) & 1) != 0) {
+            plateSize++;
+        }
 
-        BlockPos originA = new BlockPos(2, 1, 2);
-        BlockPos originB = originA.offset(shift, 0, 0);
-        Map<BlockPos, BlockState> blocksA = offset(structure, originA);
-        Map<BlockPos, BlockState> blocksB = offset(structure, originB);
-        Selection selA = selectionOf(util, blocksA.keySet());
-        Selection selB = selectionOf(util, blocksB.keySet());
+        // Slide the single structure copy onto the view centre. This used to
+        // centre the midpoint of TWO side-by-side copies (capture/release demo),
+        // which pushed whichever copy was actually on screen ~w/2 blocks to one
+        // side - the whole scene then read as off-centre. The bottle icon now
+        // flies off alone to convey "data travels with the bottle".
+        int originX = Math.round(plateSize / 2f + 1 - w / 2f);
+        int originZ = Math.round(plateSize / 2f + 1 - d / 2f);
+        BlockPos origin = new BlockPos(originX, 1, originZ);
+        Map<BlockPos, BlockState> blocks = offset(structure, origin);
+        Selection sel = selectionOf(util, blocks.keySet());
 
-        Vec3 centerA = centerOf(blocksA.keySet());
-        Vec3 centerB = centerOf(blocksB.keySet());
-        Vec3 topA = new Vec3(centerA.x, maxY(blocksA.keySet()) + 1.5, centerA.z);
-        Vec3 topB = new Vec3(centerB.x, maxY(blocksB.keySet()) + 1.5, centerB.z);
+        Vec3 center = centerOf(blocks.keySet());
+        Vec3 top = new Vec3(center.x, maxY(blocks.keySet()) + 1.5, center.z);
 
-        // The base plate is the y=0 checker layer of the schematic, cropped to this
-        // square: grow it with the structure so the whole footprint always sits on it.
-        int spanX = shift > 0 ? shift + w : w;
-        int plateSize = Math.min(limit[0] - 1, Math.max(7, Math.max(spanX, d) + 3));
         scene.configureBasePlate(1, 1, plateSize);
         scene.showBasePlate();
         // Zoom out for both footprint and height: the visible half-height of the
         // scene is ~5.5 blocks at scale 1, so a structure taller than ~10 blocks
-        // used to run off the top of the panel. setSceneOffsetY then slides the
-        // view centre from the plate (y=1) to the structure's mid-height.
-        float viewScale = Math.min(10f / plateSize, 9f / (h + 1));
+        // used to run off the top of the panel. setSceneOffsetY places the view
+        // centre (1 - yOffset) exactly on the structure's vertical centre so it
+        // sits mid-screen instead of half a block low.
+        float footprint = Math.max(w, d);
+        float viewScale = Math.min(10f / Math.max(plateSize, footprint), 9f / (h + 1));
         scene.scaleSceneView(Math.max(0.15f, Math.min(1f, viewScale)));
-        scene.setSceneOffsetY((1 - h) / 2f);
+        scene.setSceneOffsetY(-h / 2f);
 
         ItemStack bottle = new ItemStack(ModItems.SHIP_IN_A_BOTTLE.get());
 
-        scene.special().movePointOfInterest(centerA);
+        scene.special().movePointOfInterest(center);
 
         if (oversized) {
             scene.overlay().showText(90)
                 .text("The saved structure exceeds the preview limit, showing a stand-in instead")
-                .pointAt(centerA)
+                .pointAt(center)
                 .placeNearTarget();
             scene.idle(100);
             scene.overlay().showText(90)
                 .text("Raise max_structure_size in config/sableinbottle.json to preview it")
-                .pointAt(centerA)
+                .pointAt(center)
                 .placeNearTarget();
             scene.idle(100);
         }
 
-        for (Map.Entry<BlockPos, BlockState> entry : blocksA.entrySet()) {
+        for (Map.Entry<BlockPos, BlockState> entry : blocks.entrySet()) {
             scene.world().setBlock(entry.getKey(), entry.getValue(), false);
         }
         scene.idle(4);
-        ElementLink<WorldSectionElement> linkA = scene.world().showIndependentSection(selA, Direction.DOWN);
+        ElementLink<WorldSectionElement> linkA = scene.world().showIndependentSection(sel, Direction.DOWN);
         scene.idle(18);
 
         scene.overlay().showText(70)
             .text("This is the physics structure saved in the bottle")
-            .pointAt(centerA)
+            .pointAt(center)
             .placeNearTarget();
         scene.idle(95);
 
-        scene.overlay().showControls(topA, Pointing.DOWN, 40).rightClick().withItem(bottle);
+        scene.overlay().showControls(top, Pointing.DOWN, 40).rightClick().withItem(bottle);
         scene.idle(30);
         scene.world().hideIndependentSection(linkA, Direction.UP);
         scene.idle(25);
-        scene.world().setBlocks(selA, Blocks.AIR.defaultBlockState(), false);
+        scene.world().setBlocks(sel, Blocks.AIR.defaultBlockState(), false);
         scene.idle(10);
 
         scene.overlay().showText(70)
             .text("Block entities, ticks and structure data are serialized in full")
-            .pointAt(centerA)
+            .pointAt(center)
             .placeNearTarget();
         scene.idle(95);
 
-        if (shift > 0) {
-            scene.special().movePointOfInterest(centerB);
-        }
-        scene.overlay().showControls(shift > 0 ? topB : topA, Pointing.UP, 40).withItem(bottle);
+        // The bottle flies off with the data instead of a second structure copy
+        // appearing elsewhere: the copy trick kept the view off-centre while the
+        // visible structure was showing.
+        scene.overlay().showControls(top, Pointing.UP, 40).withItem(bottle);
         scene.idle(30);
         scene.overlay().showText(70)
             .text("Saved data is not tied to coordinates - take it anywhere")
-            .pointAt(shift > 0 ? centerB : centerA)
+            .pointAt(center)
             .placeNearTarget();
         scene.idle(95);
 
-        scene.overlay().showControls(topB, Pointing.DOWN, 40).rightClick().withItem(bottle);
+        scene.overlay().showControls(top, Pointing.DOWN, 40).rightClick().withItem(bottle);
         scene.idle(30);
-        for (Map.Entry<BlockPos, BlockState> entry : blocksB.entrySet()) {
+        for (Map.Entry<BlockPos, BlockState> entry : blocks.entrySet()) {
             scene.world().setBlock(entry.getKey(), entry.getValue(), false);
         }
-        ElementLink<WorldSectionElement> linkB = scene.world().showIndependentSection(selB, Direction.DOWN);
+        ElementLink<WorldSectionElement> linkB = scene.world().showIndependentSection(sel, Direction.DOWN);
         scene.idle(25);
-        scene.overlay().showOutline(PonderPalette.WHITE, new Object(), selB, 60);
+        scene.overlay().showOutline(PonderPalette.WHITE, new Object(), sel, 60);
         scene.overlay().showText(70)
             .text("On release it appears where you point")
-            .pointAt(centerB)
+            .pointAt(center)
             .placeNearTarget();
         scene.idle(95);
 
