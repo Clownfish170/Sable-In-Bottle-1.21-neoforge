@@ -1,8 +1,5 @@
 {
-  "parent": "item/generated",
-  "textures": {
-    "layer0": "sableinbottle:item/ship_in_a_bottle"
-  },
+  "parent": "sableinbottle:block/bottle",
   "overrides": [
     {
       "predicate": {

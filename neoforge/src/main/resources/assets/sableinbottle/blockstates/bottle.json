@@ -1,14 +1,36 @@
 {
   "multipart": [
     {
-      "apply": {
-        "model": "sableinbottle:block/bottle_shell"
-      }
+      "when": { "facing": "north" },
+      "apply": { "model": "sableinbottle:block/bottle_shell" }
     },
     {
-      "apply": {
-        "model": "sableinbottle:block/bottle_cork"
-      }
+      "when": { "facing": "east" },
+      "apply": { "model": "sableinbottle:block/bottle_shell", "y": 90 }
+    },
+    {
+      "when": { "facing": "south" },
+      "apply": { "model": "sableinbottle:block/bottle_shell", "y": 180 }
+    },
+    {
+      "when": { "facing": "west" },
+      "apply": { "model": "sableinbottle:block/bottle_shell", "y": 270 }
+    },
+    {
+      "when": { "facing": "north" },
+      "apply": { "model": "sableinbottle:block/bottle_cork" }
+    },
+    {
+      "when": { "facing": "east" },
+      "apply": { "model": "sableinbottle:block/bottle_cork", "y": 90 }
+    },
+    {
+      "when": { "facing": "south" },
+      "apply": { "model": "sableinbottle:block/bottle_cork", "y": 180 }
+    },
+    {
+      "when": { "facing": "west" },
+      "apply": { "model": "sableinbottle:block/bottle_cork", "y": 270 }
     }
   ]
 }

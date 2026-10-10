@@ -5,7 +5,7 @@
 Sable in Bottle 是一个小型功能模组，为 [Sable](https://github.com/ryanhcode/sable) 的物理船只提供"瓶子"玩法：用瓶子把一艘船收进来，带着它四处走，再在任何地方放出来。瓶内的结构会实时渲染在玻璃腔里，空瓶和满瓶一眼可辨。
 
 - **Mod ID**：`sableinbottle`
-- **版本**：1.1.0
+- **版本**：1.2.0
 - **Minecraft**：1.21.1 · **加载器**：NeoForge 21.1.228+ · **Java**：21
 - **作者**：Clownfish170
 - **许可证**：MIT
@@ -15,7 +15,7 @@ Sable in Bottle 是一个小型功能模组，为 [Sable](https://github.com/rya
 | 模组 | 版本 | 说明 |
 | --- | --- | --- |
 | [Sable](https://modrinth.com/mod/sable) | 2.0.0 – 2.x | 物理船只与子层级系统（必需） |
-| Create | 6.0.11+ | 提供 Ponder 思索界面（必需） |
+| Create | 6.0.10+ | 提供 Ponder 思索界面（必需） |
 | Create: Aeronautics | 1.3.2+ | 船只内容（必需） |
 | NeoForge | 21.1.228+ | 加载器（必需） |
 
@@ -67,7 +67,7 @@ Sable in Bottle 是一个小型功能模组，为 [Sable](https://github.com/rya
 产物路径：
 
 ```
-neoforge/build/libs/sableinbottle-neoforge-1.21.1-1.1.0.jar
+neoforge/build/libs/sableinbottle-neoforge-1.21.1-1.2.0.jar
 ```
 
 将该 jar 放入实例的 `mods/` 文件夹（同时确保已安装上表依赖）即可游玩。

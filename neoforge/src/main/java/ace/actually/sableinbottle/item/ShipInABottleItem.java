@@ -1,11 +1,18 @@
 package ace.actually.sableinbottle.item;
 
 import ace.actually.sableinbottle.ModBlocks;
+import ace.actually.sableinbottle.blocks.ShipInBottleBlock;
 import ace.actually.sableinbottle.blocks.entity.ShipInBottleBlockEntity;
+import com.simibubi.create.content.contraptions.AbstractContraptionEntity;
+import com.simibubi.create.content.contraptions.bearing.MechanicalBearingBlockEntity;
+import com.simibubi.create.content.contraptions.piston.LinearActuatorBlockEntity;
 import dev.ryanhcode.sable.Sable;
+import dev.ryanhcode.sable.api.sublevel.KinematicContraption;
 import dev.ryanhcode.sable.api.sublevel.SubLevelContainer;
 import dev.ryanhcode.sable.sublevel.ServerSubLevel;
 import dev.ryanhcode.sable.sublevel.SubLevel;
+import dev.ryanhcode.sable.sublevel.plot.PlotChunkHolder;
+import dev.ryanhcode.sable.sublevel.plot.ServerLevelPlot;
 import dev.ryanhcode.sable.sublevel.storage.SubLevelRemovalReason;
 import dev.ryanhcode.sable.sublevel.storage.serialization.SubLevelData;
 import dev.ryanhcode.sable.sublevel.storage.serialization.SubLevelSerializer;
@@ -29,6 +36,9 @@ import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.chunk.LevelChunk;
 
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -71,7 +81,11 @@ public class ShipInABottleItem extends Item {
         if (!level.getBlockState(placePos).canBeReplaced(new BlockPlaceContext(context))) {
             return InteractionResult.PASS;
         }
-        if (!level.setBlock(placePos, ModBlocks.BOTTLE.get().defaultBlockState(), 3)) {
+        // The cork is the bottle's front: aim it at the player's left so it always
+        // lands on the left side of the view instead of pointing the same way.
+        BlockState bottleState = ModBlocks.BOTTLE.get().defaultBlockState()
+            .setValue(ShipInBottleBlock.FACING, context.getHorizontalDirection().getCounterClockWise());
+        if (!level.setBlock(placePos, bottleState, 3)) {
             return InteractionResult.PASS;
         }
 
@@ -91,6 +105,8 @@ public class ShipInABottleItem extends Item {
             return InteractionResult.PASS;
         }
 
+        shutdownRunningContraptions(subLevel);
+
         SubLevelData subLevelData = SubLevelSerializer.toData(subLevel, List.of());
 
         CompoundTag tag = new CompoundTag();
@@ -101,6 +117,42 @@ public class ShipInABottleItem extends Item {
 
         player.sendSystemMessage(Component.translatable("text.sableinbottle.ship_bottled"));
         return InteractionResult.SUCCESS;
+    }
+
+    /**
+     * Running windmills, propeller bearings and pistons hold their blocks in a
+     * contraption entity that Sable's plot serializer never writes to disk, so
+     * bottling the ship mid-rotation would drop the whole structure: it is missing
+     * from the Ponder preview and the placed bottle, and gone after release. Every
+     * controller is disassembled first - the same code path as stopping the motor -
+     * so the blocks are back on the plot grid before it is captured. Angles snap to
+     * the nearest quarter turn, so the restored structure always lands on the grid.
+     */
+    private static void shutdownRunningContraptions(ServerSubLevel subLevel) {
+        ServerLevelPlot plot = subLevel.getPlot();
+
+        // Block-entity side: disassembling through the controller also resets its
+        // Running/Angle state, so the bottled ship cannot be saved half-assembled.
+        for (PlotChunkHolder holder : plot.getLoadedChunks()) {
+            LevelChunk chunk = holder.getChunk();
+            for (BlockEntity blockEntity : List.copyOf(chunk.getBlockEntities().values())) {
+                if (blockEntity instanceof MechanicalBearingBlockEntity bearing) {
+                    if (bearing.isRunning() || bearing.getMovedContraption() != null) {
+                        bearing.disassemble();
+                    }
+                } else if (blockEntity instanceof LinearActuatorBlockEntity actuator && actuator.running) {
+                    actuator.disassemble();
+                }
+            }
+        }
+
+        // Anything whose controller this mod does not know about is disassembled
+        // straight from the entity, so its blocks still make it into the capture.
+        for (KinematicContraption contraption : List.copyOf(plot.getContraptions())) {
+            if (contraption instanceof AbstractContraptionEntity entity && entity.isAlive()) {
+                entity.disassemble();
+            }
+        }
     }
 
     private InteractionResult releaseShip(ItemStack stack, Level level, Player player, BlockPos clickedPos) {

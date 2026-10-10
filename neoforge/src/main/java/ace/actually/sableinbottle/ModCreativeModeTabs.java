@@ -27,7 +27,6 @@ public class ModCreativeModeTabs {
                     })
                     .displayItems((params, output) -> {
                         output.accept(ModItems.SHIP_IN_A_BOTTLE.get());
-                        output.accept(ModItems.BOTTLE.get());
                     })
                     .build()
     );

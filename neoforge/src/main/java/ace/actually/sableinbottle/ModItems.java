@@ -13,7 +13,7 @@ public class ModItems {
     public static final Supplier<ShipInABottleItem> SHIP_IN_A_BOTTLE = ITEMS.register(
             "ship_in_a_bottle", () -> new ShipInABottleItem(new Item.Properties()));
 
-    /** The placeable big bottle block's item (creative tab / give command). */
+    /** The bottle block's item (give command / block drops); hidden from the creative tab. */
     public static final Supplier<BlockItem> BOTTLE = ITEMS.register(
             "bottle", () -> new BlockItem(ModBlocks.BOTTLE.get(), new Item.Properties()));
 }

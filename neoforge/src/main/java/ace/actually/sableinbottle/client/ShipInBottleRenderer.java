@@ -1,8 +1,10 @@
 package ace.actually.sableinbottle.client;
 
+import ace.actually.sableinbottle.blocks.ShipInBottleBlock;
 import ace.actually.sableinbottle.blocks.entity.ShipInBottleBlockEntity;
 import ace.actually.sableinbottle.ship.ShipStructureDecoder;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
@@ -112,6 +114,9 @@ public class ShipInBottleRenderer implements BlockEntityRenderer<ShipInBottleBlo
         poseStack.pushPose();
         // Model units to block units, then fit the structure around the cavity centre.
         poseStack.translate(center.x, center.y + bob, center.z);
+        // The glass (and its cork) is rotated by the block's facing; the miniature
+        // turns with it so the ship stays inside the cavity's open side.
+        poseStack.mulPose(Axis.YP.rotationDegrees(-bottle.getBlockState().getValue(ShipInBottleBlock.FACING).toYRot()));
         poseStack.scale((float) scale, (float) scale, (float) scale);
         poseStack.translate(-w / 2.0, -h / 2.0, -d / 2.0);
 

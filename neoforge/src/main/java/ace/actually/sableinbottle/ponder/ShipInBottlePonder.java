@@ -156,12 +156,12 @@ public class ShipInBottlePonder {
 
         if (oversized) {
             scene.overlay().showText(90)
-                .text("The saved structure exceeds the preview limit, showing a stand-in instead")
+                .sharedText("oversized_limit")
                 .pointAt(center)
                 .placeNearTarget();
             scene.idle(100);
             scene.overlay().showText(90)
-                .text("Raise max_structure_size in config/sableinbottle.json to preview it")
+                .sharedText("oversized_config")
                 .pointAt(center)
                 .placeNearTarget();
             scene.idle(100);
@@ -175,7 +175,7 @@ public class ShipInBottlePonder {
         scene.idle(18);
 
         scene.overlay().showText(70)
-            .text("This is the physics structure saved in the bottle")
+            .sharedText("structure_saved")
             .pointAt(center)
             .placeNearTarget();
         scene.idle(95);
@@ -188,7 +188,7 @@ public class ShipInBottlePonder {
         scene.idle(10);
 
         scene.overlay().showText(70)
-            .text("Block entities, ticks and structure data are serialized in full")
+            .sharedText("full_serialization")
             .pointAt(center)
             .placeNearTarget();
         scene.idle(95);
@@ -199,7 +199,7 @@ public class ShipInBottlePonder {
         scene.overlay().showControls(top, Pointing.UP, 40).withItem(bottle);
         scene.idle(30);
         scene.overlay().showText(70)
-            .text("Saved data is not tied to coordinates - take it anywhere")
+            .sharedText("coordinate_free")
             .pointAt(center)
             .placeNearTarget();
         scene.idle(95);
@@ -213,7 +213,7 @@ public class ShipInBottlePonder {
         scene.idle(25);
         scene.overlay().showOutline(PonderPalette.WHITE, new Object(), sel, 60);
         scene.overlay().showText(70)
-            .text("On release it appears where you point")
+            .sharedText("release_anywhere")
             .pointAt(center)
             .placeNearTarget();
         scene.idle(95);

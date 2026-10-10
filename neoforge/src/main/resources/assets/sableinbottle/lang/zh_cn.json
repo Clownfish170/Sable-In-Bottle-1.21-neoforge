@@ -1,5 +1,5 @@
 {
-  "itemGroup.sableinbottle.main": "Sable in Bottle",
+  "itemGroup.sableinbottle.main": "瓶中船",
   "item.sableinbottle.ship_in_a_bottle": "瓶中船",
   "block.sableinbottle.bottle": "瓶中船摆件",
   "text.sableinbottle.not_on_ship": "你必须站在船上！",
@@ -9,8 +9,10 @@
   "text.sableinbottle.missing_blocks": "瓶中船包含未安装模组的方块，已替换为空气：%s",
   "text.sableinbottle.bottle_contains": "瓶中装着一艘船",
   "sableinbottle.ponder.bottle.header": "瓶中船",
-  "sableinbottle.ponder.bottle.text_1": "这就是瓶中保存的物理结构",
-  "sableinbottle.ponder.bottle.text_2": "方块实体、刻度与结构数据都被完整序列化",
-  "sableinbottle.ponder.bottle.text_3": "保存的只是数据，与坐标无关——可以带它去任何地方",
-  "sableinbottle.ponder.bottle.text_4": "释放时会出现在你指向的位置"
+  "sableinbottle.ponder.shared.oversized_limit": "保存的结构超出预览上限，已用演示船只代替",
+  "sableinbottle.ponder.shared.oversized_config": "在 config/sableinbottle.json 中调大 max_structure_size 即可预览",
+  "sableinbottle.ponder.shared.structure_saved": "这就是瓶中保存的物理结构",
+  "sableinbottle.ponder.shared.full_serialization": "方块实体、刻与结构数据都被完整序列化",
+  "sableinbottle.ponder.shared.coordinate_free": "保存的只是数据，与坐标无关——可以带它去任何地方",
+  "sableinbottle.ponder.shared.release_anywhere": "释放时会出现在你指向的位置"
 }

@@ -1,6 +1,706 @@
 {
-  "parent": "item/generated",
+  "parent": "sableinbottle:block/bottle",
+  "credit": "Made with Blockbench",
+  "ambientocclusion": true,
+  "gui_light": "front",
+  "render_type": "minecraft:translucent",
   "textures": {
-    "layer0": "sableinbottle:item/ship_in_a_bottle_full"
-  }
+    "glass": "minecraft:block/glass",
+    "cork": "minecraft:block/oak_planks",
+    "particle": "minecraft:block/glass",
+    "hull": "minecraft:block/dark_oak_planks",
+    "deck": "minecraft:block/oak_planks",
+    "mast": "minecraft:block/oak_log",
+    "sail": "minecraft:block/white_wool",
+    "flag": "minecraft:block/red_wool"
+  },
+  "elements": [
+    {
+      "name": "cork",
+      "from": [
+        3.75,
+        0.75,
+        0
+      ],
+      "to": [
+        12.25,
+        9.25,
+        3
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            0.0,
+            0.0,
+            16.0,
+            16.0
+          ],
+          "texture": "#cork"
+        },
+        "east": {
+          "uv": [
+            0.0,
+            0.0,
+            16.0,
+            16.0
+          ],
+          "texture": "#cork"
+        },
+        "north": {
+          "uv": [
+            0.0,
+            0.0,
+            16.0,
+            16.0
+          ],
+          "texture": "#cork"
+        },
+        "south": {
+          "uv": [
+            0.0,
+            0.0,
+            16.0,
+            16.0
+          ],
+          "texture": "#cork"
+        },
+        "up": {
+          "uv": [
+            0.0,
+            0.0,
+            16.0,
+            16.0
+          ],
+          "texture": "#cork"
+        },
+        "west": {
+          "uv": [
+            0.0,
+            0.0,
+            16.0,
+            16.0
+          ],
+          "texture": "#cork"
+        }
+      }
+    },
+    {
+      "name": "wall_bottom",
+      "from": [
+        3,
+        0,
+        1
+      ],
+      "to": [
+        13,
+        0.5,
+        13
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            0.0,
+            0.0,
+            16.0,
+            16.0
+          ],
+          "texture": "#glass"
+        },
+        "east": {
+          "uv": [
+            0.0,
+            15.2,
+            16.0,
+            16.0
+          ],
+          "texture": "#glass"
+        },
+        "north": {
+          "uv": [
+            0.0,
+            15.2,
+            16.0,
+            16.0
+          ],
+          "texture": "#glass"
+        },
+        "south": {
+          "uv": [
+            0.0,
+            15.2,
+            16.0,
+            16.0
+          ],
+          "texture": "#glass"
+        },
+        "up": {
+          "uv": [
+            0.0,
+            0.0,
+            16.0,
+            16.0
+          ],
+          "texture": "#glass"
+        },
+        "west": {
+          "uv": [
+            0.0,
+            15.2,
+            16.0,
+            16.0
+          ],
+          "texture": "#glass"
+        }
+      }
+    },
+    {
+      "name": "wall_top",
+      "from": [
+        3,
+        9.5,
+        1
+      ],
+      "to": [
+        13,
+        10,
+        13
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            0.0,
+            0.0,
+            16.0,
+            16.0
+          ],
+          "texture": "#glass"
+        },
+        "east": {
+          "uv": [
+            0.0,
+            0.0,
+            16.0,
+            0.8
+          ],
+          "texture": "#glass"
+        },
+        "north": {
+          "uv": [
+            0.0,
+            0.0,
+            16.0,
+            0.8
+          ],
+          "texture": "#glass"
+        },
+        "south": {
+          "uv": [
+            0.0,
+            0.0,
+            16.0,
+            0.8
+          ],
+          "texture": "#glass"
+        },
+        "up": {
+          "uv": [
+            0.0,
+            0.0,
+            16.0,
+            16.0
+          ],
+          "texture": "#glass"
+        },
+        "west": {
+          "uv": [
+            0.0,
+            0.0,
+            16.0,
+            0.8
+          ],
+          "texture": "#glass"
+        }
+      }
+    },
+    {
+      "name": "wall_west",
+      "from": [
+        3,
+        0.5,
+        1
+      ],
+      "to": [
+        3.5,
+        9.5,
+        13
+      ],
+      "faces": {
+        "east": {
+          "uv": [
+            0.0,
+            0.0,
+            16.0,
+            16.0
+          ],
+          "texture": "#glass"
+        },
+        "north": {
+          "uv": [
+            0.0,
+            0.8,
+            0.8,
+            15.2
+          ],
+          "texture": "#glass"
+        },
+        "south": {
+          "uv": [
+            0.0,
+            0.8,
+            0.8,
+            15.2
+          ],
+          "texture": "#glass"
+        },
+        "west": {
+          "uv": [
+            0.0,
+            0.8,
+            16.0,
+            15.2
+          ],
+          "texture": "#glass"
+        }
+      }
+    },
+    {
+      "name": "wall_east",
+      "from": [
+        12.5,
+        0.5,
+        1
+      ],
+      "to": [
+        13,
+        9.5,
+        13
+      ],
+      "faces": {
+        "east": {
+          "uv": [
+            0.0,
+            0.8,
+            16.0,
+            15.2
+          ],
+          "texture": "#glass"
+        },
+        "north": {
+          "uv": [
+            15.2,
+            0.8,
+            16.0,
+            15.2
+          ],
+          "texture": "#glass"
+        },
+        "south": {
+          "uv": [
+            15.2,
+            0.8,
+            16.0,
+            15.2
+          ],
+          "texture": "#glass"
+        },
+        "west": {
+          "uv": [
+            0.0,
+            0.0,
+            16.0,
+            16.0
+          ],
+          "texture": "#glass"
+        }
+      }
+    },
+    {
+      "name": "wall_back",
+      "from": [
+        3.5,
+        0.5,
+        12.5
+      ],
+      "to": [
+        12.5,
+        9.5,
+        13
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0.0,
+            0.0,
+            16.0,
+            16.0
+          ],
+          "texture": "#glass"
+        },
+        "south": {
+          "uv": [
+            0.8,
+            0.8,
+            15.2,
+            15.2
+          ],
+          "texture": "#glass"
+        }
+      }
+    },
+    {
+      "name": "ship_hull",
+      "from": [
+        4.5,
+        1,
+        3.5
+      ],
+      "to": [
+        11.5,
+        3,
+        11
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#hull"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#hull"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#hull"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#hull"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#hull"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#hull"
+        }
+      }
+    },
+    {
+      "name": "ship_stern",
+      "from": [
+        5.5,
+        3,
+        9
+      ],
+      "to": [
+        10.5,
+        4.25,
+        11
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#deck"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#deck"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#deck"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#deck"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#deck"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#deck"
+        }
+      }
+    },
+    {
+      "name": "ship_mast",
+      "from": [
+        7.7,
+        2.5,
+        6.9
+      ],
+      "to": [
+        8.05,
+        8.75,
+        7.25
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#mast"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#mast"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#mast"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#mast"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#mast"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#mast"
+        }
+      }
+    },
+    {
+      "name": "ship_sail",
+      "from": [
+        7.9,
+        3.75,
+        4.25
+      ],
+      "to": [
+        8.1,
+        7.5,
+        9.75
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#sail"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#sail"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#sail"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#sail"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#sail"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#sail"
+        }
+      }
+    },
+    {
+      "name": "ship_flag",
+      "from": [
+        7.75,
+        7.7,
+        7.25
+      ],
+      "to": [
+        8.0,
+        8.7,
+        9.0
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#flag"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#flag"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#flag"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#flag"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#flag"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#flag"
+        }
+      }
+    }
+  ]
 }
